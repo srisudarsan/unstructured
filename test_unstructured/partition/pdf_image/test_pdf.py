@@ -10,6 +10,8 @@ from pathlib import Path
 from tempfile import SpooledTemporaryFile
 from unittest import mock
 
+from unittest.mock import patch
+
 import pytest
 from pdf2image.exceptions import PDFPageCountError
 from PIL import Image
@@ -18,6 +20,7 @@ from unstructured_inference.inference import layout
 from unstructured_inference.inference.elements import Rectangle
 from unstructured_inference.inference.layout import DocumentLayout, PageLayout
 from unstructured_inference.inference.layoutelement import LayoutElement
+from unstructured.chunking.custom import custom_chunking
 
 from test_unstructured.unit_utils import assert_round_trips_through_JSON, example_doc_path
 from unstructured.chunking.title import chunk_by_title
@@ -815,6 +818,38 @@ def test_partition_pdf_warns_with_ocr_languages(caplog):
     pdf.partition_pdf(filename=filename, strategy=PartitionStrategy.HI_RES, ocr_languages="eng")
     assert "The ocr_languages kwarg will be deprecated" in caplog.text
 
+def test_custom_chunking_returns_split_chunks(sample_elements):
+    # Mock the recursive_text_splitter return value
+    mocked_chunks = [Text("Chunk 1"), Text("Chunk 2")]
+
+    with patch("unstructured.chunking.custom.recursive_text_splitter", return_value=mocked_chunks) as mock_splitter:
+        result = custom_chunking(
+            elements=sample_elements,
+            max_characters=100,
+            new_after_n_chars=50,
+            chunking_model_name="model",
+            custom_metadata='{"source": "test"}'
+        )
+
+        mock_splitter.assert_called_once_with(
+            sample_elements,
+            "model",
+            100,
+            50,
+            '{"source": "test"}'
+        )
+        assert result == mocked_chunks
+
+
+def test_custom_chunking_raises_value_error_without_model(sample_elements):
+    with pytest.raises(ValueError, match="A 'model_name' must be provided"):
+        custom_chunking(
+            elements=sample_elements,
+            max_characters=100,
+            new_after_n_chars=50,
+            chunking_model_name=None,
+            custom_metadata=None
+        )
 
 def test_partition_categorization_backup():
     text = "This is Clearly a Title"
