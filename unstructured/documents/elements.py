@@ -690,7 +690,9 @@ class Element(abc.ABC):
             self.metadata.coordinates = CoordinatesMetadata(
                 points=coordinates, system=coordinate_system
             )
-        self.metadata.detection_origin = detection_origin
+        if detection_origin is not None:
+            self.metadata.detection_origin = detection_origin
+
         # -- all `Element` instances get a `text` attribute, defaults to the empty string if not
         # -- defined in a subclass.
         self.text = self.text if hasattr(self, "text") else ""
