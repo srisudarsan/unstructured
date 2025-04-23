@@ -5,7 +5,7 @@ from unstructured.documents.elements import Element
 
 class TextElement(Element):
     def __init__(self, text: str, metadata: Optional[dict] = None):
-        super().__init__(metadata=metadata)
+        super().__init__()
         self.text = text
         self.category = "Text"
 
