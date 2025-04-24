@@ -14,4 +14,6 @@ include requirements/extra-pdf-image.in
 include requirements/extra-pptx.in
 include requirements/extra-xlsx.in
 include requirements/huggingface.in
+recursive-include unstructured/vendor_packages *
+
 

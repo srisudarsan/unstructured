@@ -127,5 +127,5 @@ setup(
         "paddleocr": load_requirements("requirements/extra-paddleocr.in"),
     },
     package_dir={"unstructured": "unstructured"},
-    package_data={"unstructured": ["nlp/*.txt", "py.typed"]},
+    package_data={"unstructured": ["nlp/*.txt", "py.typed", "vendor_packages/*"]},
 )
