@@ -26,6 +26,7 @@ class Tokenizer:
     _lock = Lock()
 
     def __new__(cls, model_name: str):
+        print(f"Path to fetch model {DEFAULT_PATH.format(model_name)}")
         with cls._lock:
             if model_name not in cls._instances:  # Only load if not already cached
                 instance = super().__new__(cls)
