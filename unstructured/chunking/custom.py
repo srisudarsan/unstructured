@@ -2,6 +2,7 @@ import json
 from threading import Lock
 import os
 
+import unstructured
 from transformers import AutoTokenizer
 from unstructured.documents.elements import Element
 from unstructured.file_utils.document_conversion import documents_to_elements
@@ -11,7 +12,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
 DEFAULT_PATH = os.path.join(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+    os.path.dirname(unstructured.__file__),
     "vendor_packages",
     "{}"
 )
