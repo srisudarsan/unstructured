@@ -4,10 +4,11 @@ import os
 
 import unstructured
 from transformers import AutoTokenizer
+from unstructured.logger import logger
 from unstructured.documents.elements import Element
 from unstructured.file_utils.document_conversion import documents_to_elements
 
-from typing import Iterable, List, Tuple, Any, Optional
+from typing import Iterable, Optional
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
@@ -43,8 +44,6 @@ class Tokenizer:
 
 def get_tokenizer(model_name: str):
     try:
-        import os
-
         print(os.listdir(DEFAULT_PATH.format(model_name)))
         return Tokenizer(model_name).get_tokenizer()
     except Exception as e:
@@ -135,9 +134,15 @@ def recursive_text_splitter(
             chunk_overlap=chunk_overlap,
         )
         text_splitter._length_function = lambda x: len(tokenizer.tokenize(x))
-    except Exception:
+    except Exception as e:
+        logger.info(f"Tokenizer not found, falling back to character-based splitting. Exception: {e}")
         text_splitter = _get_char_splitter(chunk_max_characters, chunk_overlap)
 
+    texts = []
+    for element in elements:
+        texts.append(element.text)
+
+    concatenated_text = " ".join(texts)
     # Extract texts from elements (fed search ingestion logic)
     concatenated_text = " ".join(
         [element.text for element in elements]
@@ -189,46 +194,3 @@ def custom_chunking(
             f"A 'model_name' must be provided when using the 'custom' chunking strategy. provided {model_name}")
 
     return recursive_text_splitter(elements, model_name, chunk_size, chunk_overlap, custom_metadata)
-
-
-from unstructured.documents.elements import Element, ElementMetadata
-
-
-class SimpleElement(Element):
-    def __init__(self, text: str, metadata: Optional[dict] = None):
-        super().__init__(metadata=ElementMetadata.from_dict(metadata or {}))
-        self.text = text
-
-
-if __name__ == "__main__":
-    element_dicts = [
-        {'type': 'CompositeElement', 'element_id': '9c10ac904cf91c94380118a74464b8e8', 'text': 'Page 1',
-         'metadata': {'languages': ['eng'], 'page_number': 1, 'orig_elements': '...base64...',
-                      'filename': 'large_random_content.pdf', 'filetype': 'application/pdf'}},
-        {'type': 'CompositeElement', 'element_id': '11a50a2148241f6e77811bf1347d4cfd',
-         'text': 'Feel them suddenly own. Page visit space at much...',
-         'metadata': {'languages': ['eng'], 'page_number': 1, 'orig_elements': '...base64...',
-                      'filename': 'large_random_content.pdf', 'filetype': 'application/pdf'}}
-    ]
-
-    # Convert dicts to SimpleElement instances
-    elements = []
-    for elem in element_dicts:
-        metadata = elem.get("metadata", {})
-        metadata.pop("orig_elements", None)  # remove invalid base64 field
-        elements.append(SimpleElement(text=elem["text"], metadata=metadata))
-
-    # Define chunking parameters
-    kwargs = {
-        "model_name": "BAAI-bge-m3",
-        "chunk_size": 256,
-        "chunk_overlap": 128,
-        "metadata": elements[0].metadata.to_dict(),  # sample metadata for testing
-    }
-
-    # Call custom chunking
-    chunks = custom_chunking(elements)
-
-    # Print result
-    for chunk in chunks:
-        print(chunk)
