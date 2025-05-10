@@ -15,6 +15,7 @@ from typing_extensions import ParamSpec
 
 from unstructured.chunking.basic import chunk_elements
 from unstructured.chunking.title import chunk_by_title
+from unstructured.chunking.custom import custom_chunking
 from unstructured.documents.elements import Element
 from unstructured.utils import get_call_args_applying_defaults, lazyproperty
 
@@ -126,4 +127,5 @@ class _ChunkerSpec:
 _chunker_registry: dict[str, _ChunkerSpec] = {
     "basic": _ChunkerSpec(chunk_elements),
     "by_title": _ChunkerSpec(chunk_by_title),
+    "custom": _ChunkerSpec(custom_chunking),
 }

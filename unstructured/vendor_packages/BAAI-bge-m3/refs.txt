@@ -1,0 +1,2 @@
+tokenizer files were downloaded from huggingface repo with commit SHA 5617a9f61b028005a4858fdac845db406aefb181
+https://huggingface.co/BAAI/bge-m3/tree/5617a9f61b028005a4858fdac845db406aefb181
